@@ -1,7 +1,8 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
 
-console.log('im on a node server, yo')
+//console.log('im on a node server, yo')
 
 app.get('/', function (req, res) {
     res.send('Hello World')
@@ -11,7 +12,7 @@ app.get('/', function (req, res) {
 
   
 const { MongoClient, ServerApiVersion } = require('mongodb');
-const uri = process.env.uri;
+const uri = process.env.MONGO_URI;
 
 console.log(uri);
 
