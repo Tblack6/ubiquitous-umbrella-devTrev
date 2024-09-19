@@ -39,7 +39,7 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    await client.db("trevartb992").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
@@ -77,7 +77,7 @@ app.get('/read', async (req,res)=>{
   console.log('connected?');
   // Send a ping to confirm a successful connection
   
-  let result = await client.db("barrys-db").collection("whatever-collection")
+  let result = await client.db("trevstb").collection("devking")
     .find({}).toArray(); 
   console.log(result); 
 
@@ -93,8 +93,8 @@ app.get('/insert', async (req,res)=> {
   //connect to db,
   await client.connect();
   //point to the collection 
-  await client.db("barrys-db").collection("whatever-collection").insertOne({ post: 'hardcoded post insert '});
-  await client.db("barrys-db").collection("whatever-collection").insertOne({ iJustMadeThisUp: 'hardcoded new key '});  
+  await client.db("trevstb").collection("devking").insertOne({ post: 'hardcoded post insert '});
+  await client.db("trevstb").collection("devking").insertOne({ iJustMadeThisUp: 'hardcoded new key '});  
   //insert into it
   res.render('insert');
 
@@ -105,7 +105,7 @@ app.post('/update/:id', async (req,res)=>{
   console.log("req.parms.id: ", req.params.id)
 
   client.connect; 
-  const collection = client.db("barrys-db").collection("whatever-collection");
+  const collection = client.db("trevstb").collection("devking");
   let result = await collection.findOneAndUpdate( 
   {"_id": new ObjectId(req.params.id)}, { $set: {"post": "NEW POST" } }
 )
@@ -120,7 +120,7 @@ app.post('/delete/:id', async (req,res)=>{
   console.log("req.parms.id: ", req.params.id)
 
   client.connect; 
-  const collection = client.db("barrys-db").collection("whatever-collection");
+  const collection = client.db("trevstb").collection("devking");
   let result = await collection.findOneAndDelete( 
   {"_id": new ObjectId(req.params.id)})
 
