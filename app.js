@@ -46,7 +46,7 @@ async function run() {
     await client.close();
   }
 }
-run().catch(console.dir);
+// run().catch(console.dir);
 
 
 
@@ -57,7 +57,12 @@ run().catch(console.dir);
 
 app.get('/', function (req, res) {
   // res.send('Hello Node from Ex on local dev box')
-  res.sendFile('index.html');
+  // res.sendFile('index.html');
+
+  res.render('index', {
+    myServerVariable : "something from server"
+  });
+
 })
 
 app.get('/ejs', (req,res)=>{
