@@ -3,16 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Black Friday Bingo</title>
+    <title>Black Friday Bingo Card</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #f8f9fa;
             margin: 0;
+            background: linear-gradient(135deg, #8e44ad, #3498db);
+            color: white;
+        }
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2.5em;
         }
         .bingo-card {
             display: grid;
@@ -23,21 +29,24 @@
         }
         .bingo-item {
             padding: 15px;
-            border: 2px solid #007bff;
+            border: 2px solid #fff;
             border-radius: 5px;
             text-align: center;
-            background-color: white;
+            background-color: rgba(255, 255, 255, 0.1);
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, transform 0.3s;
         }
         .bingo-item.completed {
-            background-color: #007bff;
-            color: white;
+            background-color: rgba(255, 255, 255, 0.7);
+            color: #34495e;
             text-decoration: line-through;
+            transform: scale(1.05);
         }
     </style>
 </head>
 <body>
+
+<h1>Black Friday Bingo Card</h1>
 
 <div class="bingo-card">
     <div class="bingo-item">Someone Getting Trampled</div>
@@ -67,14 +76,41 @@
 </div>
 
 <script>
-    document.querySelectorAll('.bingo-item').forEach(item => {
+    const bingoItems = document.querySelectorAll('.bingo-item');
+    bingoItems.forEach(item => {
         item.addEventListener('click', () => {
             item.classList.toggle('completed');
+            checkBingo();
         });
     });
+
+    function checkBingo() {
+
+
+      //my row ccheck
+        const card = Array.from(bingoItems).map(item => item.classList.contains('completed') ? 1 : 0);
+        const size = 5;
+        let bingo = false;
+
+        // Check rows 
+        for (let i = 0; i < size; i++) {
+            if (card.slice(i * size, i * size + size).every(val => val === 1) || // Check row
+                card.filter((_, index) => index % size === i).every(val => val === 1)) { // Check column
+                bingo = true;
+            }
+        }
+
+        // Check diagonals
+        if (card.filter((_, index) => index % (size + 1) === 0).every(val => val === 1) || // Top-left to bottom-right
+            card.filter((_, index) => index % (size - 1) === 0 && index !== 0 && index !== card.length - 1).every(val => val === 1)) { // Top-right to bottom-left
+            bingo = true;
+        }
+
+        if (bingo) {
+            setTimeout(() => alert('Congratulations! You got a Bingo!'), 100);
+        }
+    }
 </script>
 
 </body>
 </html>
-
-//this is some new stuff

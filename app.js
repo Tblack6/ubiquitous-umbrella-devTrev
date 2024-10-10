@@ -6,7 +6,7 @@ const bodyParser = require('body-parser')
 const { urlencoded } = require('body-parser')
 const { ObjectId } = require('mongodb')
 const { MongoClient, ServerApiVersion } = require('mongodb');
-const uri = `mongodb+srv://trevartb992:Superpopperat22@cluster0.eazvj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`; 
+//const uri = `mongodb+srv://trevartb992:Superpopperat22@cluster0.eazvj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`; 
 
 
 //console.log('im on a node server, yo')
