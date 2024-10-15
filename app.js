@@ -4,7 +4,7 @@ const app = express();
 const bodyParser = require('body-parser');
 const { ObjectId, MongoClient, ServerApiVersion } = require('mongodb');
 
-const uri = process.env.MONGO_URI;
+const uri = process.env.MONGODB_URI;
 
 // console.log('im on a node server, yo')
 
