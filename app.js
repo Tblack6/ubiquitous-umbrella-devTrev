@@ -1,20 +1,16 @@
 require('dotenv').config();
 const express = require('express');
-const app = express();
 const bodyParser = require('body-parser');
 const { ObjectId, MongoClient, ServerApiVersion } = require('mongodb');
 
+const app = express();
 const uri = process.env.MONGODB_URI;
 
-// console.log('im on a node server, yo')
-
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
 app.set('view engine', 'ejs');
-app.use(express.static('./public/'));
+app.use(express.static('public'));
 
-// console.log('im on a node server change that and that tanad f, yo');
-
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -25,96 +21,115 @@ const client = new MongoClient(uri, {
 
 async function connectToDatabase() {
   try {
-    // Connect the client to the server (optional starting in v4.7)
     await client.connect();
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    console.log("Successfully connected to MongoDB!");
   } catch (error) {
     console.error("Failed to connect to MongoDB", error.message);
-    process.exit(1); // Exit the process if unable to connect to the database
+    process.exit(1);
   }
 }
 
 connectToDatabase();
 
+
 app.get('/', (req, res) => {
-  // res.send('Hello Node from Ex on local dev box')
-  // res.sendFile('index.html');
-
-  res.render('index', {
-    myServerVariable: "something from server"
-  });
+  res.redirect('/todos');
 });
 
-app.get('/ejs', (req, res) => {
-  res.render('index', {
-    myServerVariable: "something from server"
-  });
-
-  // can you get content from client...to console? 
-});
-
-app.get('/read', async (req, res) => {
-  console.log('in /mongo');
+// Reading
+app.get('/todos', async (req, res) => {
   try {
-    const result = await client.db("trevstb").collection("devking").find({}).toArray(); 
-    console.log(result); 
-    res.render('mongo', {
-      postData: result
-    });
+    const todos = await client.db("todoDB").collection("todos").find({}).toArray();
+    res.render('index', { todos });
   } catch (error) {
     console.error("Error reading from database", error.message);
     res.status(500).send("Error reading from database");
   }
 });
 
-app.get('/insert', async (req, res) => {
-  console.log('in /insert');
+// Creating TODO
+app.post('/todos', async (req, res) => {
   try {
-    // connect to db,
-    // point to the collection 
-    await client.db("trevstb").collection("devking").insertOne({ post: 'hardcoded post insert' });
-    await client.db("trevstb").collection("devking").insertOne({ iJustMadeThisUp: 'hardcoded new key' });  
-    // insert into it
-    res.render('insert');
+    const newItem = { text: req.body.text, completed: false };
+    await client.db("todoDB").collection("todos").insertOne(newItem);
+    res.redirect('/todos');
   } catch (error) {
     console.error("Error inserting into database", error.message);
     res.status(500).send("Error inserting into database");
   }
 });
 
-app.post('/update/:id', async (req, res) => {
-  console.log("req.parms.id: ", req.params.id);
+// Update the text of a TODO item
+//not recognizing my obj id???
+//this task is failing
+//passing the command to mongo as a param
+app.post('/todos/update-text/:id', async (req, res) => {
   try {
-    const collection = client.db("trevstb").collection("devking");
+    console.log(req.body)
+    
+    const collection = client.db("todoDB").collection("todos");
     const result = await collection.findOneAndUpdate(
-      { "_id": new ObjectId(req.params.id) }, 
-      { $set: { "post": "NEW POST" } }
+      {"_id": new ObjectId(req.params.id)}, 
+      { $set: { text: req.body.text } }
     );
-    console.log(result); 
-    res.redirect('/read');
+
+    
+    //const result = await updateTodo(req.params.id, { $set: { text: req.body.text } });
+    if (result) {
+      console.log('Successfully updated TODO');
+      res.sendStatus(200);
+    } else {
+      console.error('Database update failed');
+      res.status(500).send('Failed to update text.');
+    }
   } catch (error) {
-    console.error("Error updating database", error.message);
-    res.status(500).send("Error updating database");
+    console.error('Error updating text in database:', error.message);
+    res.status(500).send('Error updating text in database');
   }
 });
 
-app.post('/delete/:id', async (req, res) => {
-  console.log("req.parms.id: ", req.params.id);
+// Update the completed status of a TODO item
+//cumbies code: {"_id": new ObjectId(req.body.nameID)}, { $set: {"fname": req.body.inputUpdateName } })
+
+app.post('/todos/update-completed/:id', async (req, res) => {
+  const result = await updateTodo(req.params.id, { $set: { completed: req.body.completed === 'true' } });
+  if (result) {
+    res.sendStatus(200);
+  } else {
+    res.status(500).send("Error updating completion status in database");
+  }
+});
+
+// Delete a TODO item
+app.post('/todos/delete/:id', async (req, res) => {
   try {
-    const collection = client.db("trevstb").collection("devking");
-    const result = await collection.findOneAndDelete(
-      { "_id": new ObjectId(req.params.id) }
-    );
-    console.log(result); 
-    res.redirect('/read');
+    const collection = client.db("todoDB").collection("todos");
+    await collection.findOneAndDelete({ "_id": new ObjectId(req.params.id) });
+    res.redirect('/todos');
   } catch (error) {
     console.error("Error deleting from database", error.message);
     res.status(500).send("Error deleting from database");
   }
-  // insert into it
 });
 
-const port = process.env.PORT || 5500; 
+// Helper function to update a TODO item
+async function updateTodo(id, updateData) {
+  try {
+    const collection = client.db("todoDB").collection("todos");
+    const result = await collection.findOneAndUpdate(
+      { "_id": new ObjectId(id) },
+      updateData
+    );
+    return result.ok;
+  } catch (error) {
+    console.error("Error updating TODO", error.message);
+    return false;
+  }
+}
+
+
+//port information and validation message
+const port = process.env.PORT || 5500;
 app.listen(port, () => {
-  console.log(` Yo, the server is running on port ${port}`);
+  console.log(`Server is running on port ${port}`);
 });

@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Black Friday Bingo Card</title>
+    <title>TODO List</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
@@ -18,98 +17,105 @@
         }
         h1 {
             margin-bottom: 20px;
-            font-size: 2.5em;
         }
-        .bingo-card {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
+        .todo-card {
+            display: flex;
+            flex-direction: column;
             gap: 10px;
-            max-width: 600px;
-            margin: 20px;
         }
-        .bingo-item {
-            padding: 15px;
-            border: 2px solid #fff;
+        .todo-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border: 2px solid white;
             border-radius: 5px;
-            text-align: center;
             background-color: rgba(255, 255, 255, 0.1);
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.3s;
         }
-        .bingo-item.completed {
-            background-color: rgba(255, 255, 255, 0.7);
-            color: #34495e;
+        .todo-item.completed {
             text-decoration: line-through;
-            transform: scale(1.05);
+            background-color: rgba(255, 255, 255, 0.7);
+            color: black;
+        }
+        .actions {
+            display: flex;
+            gap: 5px;
+        }
+        .update-item, .delete-item {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .update-item {
+            background-color: #3498db;
+            color: white;
+        }
+        .delete-item {
+            background-color: #e74c3c;
+            color: white;
         }
     </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
+<h1>TODO List</h1>
 
-<h1>Black Friday Bingo Card</h1>
-
-<div class="bingo-card">
-    <div class="bingo-item">Someone Getting Trampled</div>
-    <div class="bingo-item">Shoppers Fighting Over Item</div>
-    <div class="bingo-item">Unattended Child</div>
-    <div class="bingo-item">Parking Lot Fender Bender</div>
-    <div class="bingo-item">People Camping Outside Store</div>
-    <div class="bingo-item">Declined Credit Card</div>
-    <div class="bingo-item">Shopping Cart With A Janky Wheel</div>
-    <div class="bingo-item">Missing Price Tag</div>
-    <div class="bingo-item">Ridiculously Long Line</div>
-    <div class="bingo-item">Shoplifters</div>
-    <div class="bingo-item">People Cutting In Line</div>
-    <div class="bingo-item">Crowd Booing Someone</div>
-    <div class="bingo-item">Angry Store Worker</div>
-    <div class="bingo-item">Annoying Christmas Music</div>
-    <div class="bingo-item">Someone Buying A Bunch Of Gift Cards</div>
-    <div class="bingo-item">Store Security Sensor Beeping</div>
-    <div class="bingo-item">Screaming Child</div>
-    <div class="bingo-item">No More Shopping Carts</div>
-    <div class="bingo-item">Credit Card Machine Goes Down</div>
-    <div class="bingo-item">Cash Register Runs Out Of Tape</div>
-    <div class="bingo-item">Empty Sale Rack</div>
-    <div class="bingo-item">Arms Full Of Items</div>
-    <div class="bingo-item">Shopping Bag Rips</div>
-    <div class="bingo-item">Shopper In Pajamas And Slippers</div>
+<div class="todo-card">
+    <% todos.forEach(function(todo) { %>
+        <div class="todo-item <%= todo.completed ? 'completed' : '' %>" data-id="<%= todo._id %>">
+            <span class="todo-text"><%= todo.text %></span>
+            <div class="actions">
+                <button class="update-item">Update</button>
+                <button class="delete-item">Delete</button>
+            </div>
+        </div>
+    <% }); %>
 </div>
 
+<input type="text" id="new-todo-input" placeholder="New TODO">
+<button id="add-todo-item">Add</button>
+
 <script>
-    const bingoItems = document.querySelectorAll('.bingo-item');
-    bingoItems.forEach(item => {
-        item.addEventListener('click', () => {
-            item.classList.toggle('completed');
-            checkBingo();
+    $(document).ready(function () {
+        $('.todo-item').click(function () {
+            const id = $(this).data('id');
+            const completed = !$(this).hasClass('completed');
+            $.post(`/todos/update-completed/${id}`, { completed }, () => location.reload());
+        });
+
+        $('.delete-item').click(function (e) {
+            e.stopPropagation();
+            const id = $(this).closest('.todo-item').data('id');
+            $.post(`/todos/delete/${id}`, () => location.reload());
+        });
+
+        $('#add-todo-item').click(function () {
+            const text = $('#new-todo-input').val().trim();
+            if (text) $.post('/todos', { text }, () => location.reload());
+        });
+//console log right here
+        $('.update-item').click(function (e) {
+            e.stopPropagation();
+            const id = $(this).closest('.todo-item').data('id');
+            console.log(id);
+            const currentText = $(this).siblings('.todo-text').text().trim();
+            const newText = prompt("Update TODO:", currentText);
+            if (newText && newText !== currentText) {
+                $.ajax({
+                    url: `/todos/update-text/${id}`,
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ text: newText }),
+                    success: function () {
+                        location.reload();
+                    },
+                    error: function () {
+                        alert('Failed to update TODO.');
+                    }
+                });
+            }
         });
     });
-
-    function checkBingo() {
-
-
-      //my row ccheck
-        const card = Array.from(bingoItems).map(item => item.classList.contains('completed') ? 1 : 0);
-        const size = 5;
-        let bingo = false;
-
-        // Check rows 
-        for (let i = 0; i < size; i++) {
-            if (card.slice(i * size, i * size + size).every(val => val === 1) || // Check row
-                card.filter((_, index) => index % size === i).every(val => val === 1)) { // Check column
-                bingo = true;
-            }
-        }
-
-        // Check diagonals
-        if (card.filter((_, index) => index % (size + 1) === 0).every(val => val === 1) || // Top-left to bottom-right
-            card.filter((_, index) => index % (size - 1) === 0 && index !== 0 && index !== card.length - 1).every(val => val === 1)) { // Top-right to bottom-left
-            bingo = true;
-        }
-
-        if (bingo) {
-            setTimeout(() => alert('Congratulations! You got a Bingo!'), 100);
-        }
-    }
 </script>
 
 </body>
