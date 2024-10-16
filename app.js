@@ -61,7 +61,6 @@ app.post('/todos', async (req, res) => {
 
 // Update the text of a TODO item
 //not recognizing my obj id???
-//this task is failing
 //passing the command to mongo as a param
 app.post('/todos/update-text/:id', async (req, res) => {
   try {
@@ -112,7 +111,7 @@ app.post('/todos/delete/:id', async (req, res) => {
   }
 });
 
-// Helper function to update a TODO item
+// Helper function to update my TODO item
 async function updateTodo(id, updateData) {
   try {
     const collection = client.db("todoDB").collection("todos");

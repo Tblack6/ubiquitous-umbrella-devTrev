@@ -93,7 +93,7 @@
             const text = $('#new-todo-input').val().trim();
             if (text) $.post('/todos', { text }, () => location.reload());
         });
-//console log right here
+//console log right here??
         $('.update-item').click(function (e) {
             e.stopPropagation();
             const id = $(this).closest('.todo-item').data('id');
